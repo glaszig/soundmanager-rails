@@ -6,6 +6,10 @@ This is the original [SoundManager2](http://www.schillmania.com/projects/soundma
 
 Add this line to your application's Gemfile:
 
+    gem 'soundmanager-rails'
+
+Or use bleeding edge code from Github:
+
     gem 'soundmanager-rails', :git => 'git://github.com/glaszig/soundmanager-rails.git'
 
 And then execute:
@@ -18,7 +22,7 @@ Add this to your Sprockets manifest:
 
     //= require soundmanager
 
-> This asset will load `soundmanager2.js`, `soundmanager2-nodebug.js` or `soundmanager2-nodebug-jsmin.js` in case of your `Rails.env` being set to `development`, `test` or `<anything>`, respectively.  
+> This asset will load `soundmanager2.js` or `soundmanager2-nodebug.js` in case of your `Rails.env` being set to `development` or `<anything>`, respectively.  
 > Additionally, `window.soundManager.url` will be set to the proper asset url to load fallback swf files.
 
 and you're good to go.
