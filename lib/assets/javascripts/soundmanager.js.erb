@@ -1,8 +1,8 @@
 <%= case Soundmanager.env
 when 'development'
-  File.open(File.expand_path('../../../../vendor/assets/javascripts/soundmanager2-nodebug.js', __FILE__)).read
+  File.open(File.expand_path('../../../../vendor/assets/javascripts/soundmanager2.js', __FILE__)).read
 else
-  File.open(File.expand_path('../../../../vendor/assets/javascripts/soundmanager2-nodebug-jsmin.js', __FILE__)).read
+  File.open(File.expand_path('../../../../vendor/assets/javascripts/soundmanager2-nodebug.js', __FILE__)).read
 end %>
 
 //
