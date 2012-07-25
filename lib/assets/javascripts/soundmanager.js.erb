@@ -12,6 +12,6 @@ end %>
 
 (function() {
   if (typeof soundManager != 'undefined') {
-    soundManager.url = '<%= asset_path 'swf/' %>';
+    soundManager.setup({url: '<%= asset_path 'swf/' %>'});
   }
 })();
