@@ -8,7 +8,7 @@
  * Code provided under the BSD License:
  * http://schillmania.com/projects/soundmanager2/license.txt
  *
- * V2.97a.20120624
+ * V2.97a.20120916
  */
 
 /*global window, SM2_DEFER, sm2Debugger, console, document, navigator, setTimeout, setInterval, clearInterval, Audio */
@@ -20,7 +20,7 @@
  * This is the fully-commented source version of the SoundManager 2 API,
  * recommended for use during development and testing.
  *
- * See soundmanager2-nodebug-jsmin.js for an optimized build (~10KB with gzip.)
+ * See soundmanager2-nodebug-jsmin.js for an optimized build (~11KB with gzip.)
  * http://schillmania.com/projects/soundmanager2/doc/getstarted/#basic-inclusion
  * Alternately, serve this file with gzip for 75% compression savings (~30KB over HTTP.)
  *
@@ -146,7 +146,6 @@ function SoundManager(smURL, smID) {
      * determines HTML5 support + flash requirements.
      * if no support (via flash and/or HTML5) for a "required" format, SM2 will fail to start.
      * flash fallback is used for MP3 or MP4 if HTML5 can't play it (or if preferFlash = true)
-     * multiple MIME types may be tested while trying to get a positive canPlayType() response.
      */
 
     'mp3': {
@@ -155,7 +154,7 @@ function SoundManager(smURL, smID) {
     },
 
     'mp4': {
-      'related': ['aac','m4a'], // additional formats under the MP4 container
+      'related': ['aac','m4a','m4b'], // additional formats under the MP4 container
       'type': ['audio/mp4; codecs="mp4a.40.2"', 'audio/aac', 'audio/x-m4a', 'audio/MP4A-LATM', 'audio/mpeg4-generic'],
       'required': false
     },
@@ -182,7 +181,7 @@ function SoundManager(smURL, smID) {
 
   // dynamic attributes
 
-  this.versionNumber = 'V2.97a.20120624';
+  this.versionNumber = 'V2.97a.20120916';
   this.version = null;
   this.movieURL = null;
   this.altURL = null;
@@ -241,7 +240,8 @@ function SoundManager(smURL, smID) {
 
   this.hasHTML5 = (function() {
     try {
-      return (typeof Audio !== 'undefined' && typeof new Audio().canPlayType !== 'undefined');
+      // new Audio(null) for stupid Opera 9.64 case, which throws not_enough_arguments exception otherwise.
+      return (typeof Audio !== 'undefined' && typeof (_isOpera && opera.version() < 10 ? new Audio(null) : new Audio()).canPlayType !== 'undefined');
     } catch(e) {
       return false;
     }
@@ -277,14 +277,14 @@ function SoundManager(smURL, smID) {
   _is_iDevice = _ua.match(/(ipad|iphone|ipod)/i), _isIE = _ua.match(/msie/i), _isWebkit = _ua.match(/webkit/i), _isSafari = (_ua.match(/safari/i) && !_ua.match(/chrome/i)), _isOpera = (_ua.match(/opera/i)), 
   _mobileHTML5 = (_ua.match(/(mobile|pre\/|xoom)/i) || _is_iDevice),
   _isBadSafari = (!_wl.match(/usehtml5audio/i) && !_wl.match(/sm2\-ignorebadua/i) && _isSafari && !_ua.match(/silk/i) && _ua.match(/OS X 10_6_([3-7])/i)), // Safari 4 and 5 (excluding Kindle Fire, "Silk") occasionally fail to load/play HTML5 audio on Snow Leopard 10.6.3 through 10.6.7 due to bug(s) in QuickTime X and/or other underlying frameworks. :/ Confirmed bug. https://bugs.webkit.org/show_bug.cgi?id=32159
-  _hasConsole = (typeof console !== 'undefined' && typeof console.log !== 'undefined'), _isFocused = (typeof _doc.hasFocus !== 'undefined'?_doc.hasFocus():null), _tryInitOnFocus = (_isSafari && (typeof _doc.hasFocus === 'undefined' || !_doc.hasFocus())), _okToDisable = !_tryInitOnFocus, _flashMIME = /(mp3|mp4|mpa|m4a)/i,
+  _hasConsole = (typeof console !== 'undefined' && typeof console.log !== 'undefined'), _isFocused = (typeof _doc.hasFocus !== 'undefined'?_doc.hasFocus():null), _tryInitOnFocus = (_isSafari && (typeof _doc.hasFocus === 'undefined' || !_doc.hasFocus())), _okToDisable = !_tryInitOnFocus, _flashMIME = /(mp3|mp4|mpa|m4a|m4b)/i,
   _emptyURL = 'about:blank', // safe URL to unload, or load nothing from (flash 8 + most HTML5 UAs)
   _overHTTP = (_doc.location?_doc.location.protocol.match(/http/i):null),
   _http = (!_overHTTP ? 'http:/'+'/' : ''),
   // mp3, mp4, aac etc.
-  _netStreamMimeTypes = /^\s*audio\/(?:x-)?(?:mpeg4|aac|flv|mov|mp4||m4v|m4a|mp4v|3gp|3g2)\s*(?:$|;)/i,
+  _netStreamMimeTypes = /^\s*audio\/(?:x-)?(?:mpeg4|aac|flv|mov|mp4||m4v|m4a|m4b|mp4v|3gp|3g2)\s*(?:$|;)/i,
   // Flash v9.0r115+ "moviestar" formats
-  _netStreamTypes = ['mpeg4', 'aac', 'flv', 'mov', 'mp4', 'm4v', 'f4v', 'm4a', 'mp4v', '3gp', '3g2'],
+  _netStreamTypes = ['mpeg4', 'aac', 'flv', 'mov', 'mp4', 'm4v', 'f4v', 'm4a', 'm4b', 'mp4v', '3gp', '3g2'],
   _netStreamPattern = new RegExp('\\.(' + _netStreamTypes.join('|') + ')(\\?.*)?$', 'i');
 
   this.mimePattern = /^\s*audio\/(?:x-)?(?:mp(?:eg|3))\s*(?:$|;)/i; // default mp3 set
@@ -336,6 +336,8 @@ function SoundManager(smURL, smID) {
 
   this.setup = function(options) {
 
+    var noURL = (!_s.url);
+
     // warn if flash options have already been applied
 
     if (typeof options !== 'undefined' && _didInit && _needsFlash && _s.ok() && (typeof options.flashVersion !== 'undefined' || typeof options.url !== 'undefined')) {
@@ -345,6 +347,18 @@ function SoundManager(smURL, smID) {
     // TODO: defer: true?
 
     _assign(options);
+
+    // special case 1: "Late setup". SM2 loaded normally, but user didn't assign flash URL eg., setup({url:...}) before SM2 init. Treat as delayed init.
+
+    if (noURL && _didDCLoaded && typeof options.url !== 'undefined') {
+      _s.beginDelayedInit();
+    }
+
+    // special case 2: If lazy-loading SM2 (DOMContentLoaded has already happened) and user calls setup() with url: parameter, try to init ASAP.
+
+    if (!_didDCLoaded && typeof options.url !== 'undefined' && _doc.readyState === 'complete') {
+      setTimeout(_domContentLoaded, 1);
+    }
 
     return _s;
 
@@ -1458,7 +1472,8 @@ function SoundManager(smURL, smID) {
       // local shortcut
       _iO = _t._iO;
 
-      _lastURL = _t.url;
+      // make a local copy of the old url before we re-assign it
+      _lastURL = (_t.url && _t.url.toString ? _t.url.toString() : null);
 
       // reset a few state properties
 
@@ -1536,6 +1551,9 @@ function SoundManager(smURL, smID) {
         }
 
       }
+
+      // after all of this, ensure sound url is up to date.
+      _t.url = _iO.url;
 
       return _t;
 
@@ -1653,9 +1671,19 @@ function SoundManager(smURL, smID) {
         oOptions = {};
       }
 
-      _t._iO = _mixin(oOptions, _t._iO);
+      // first, use local URL (if specified)
+      if (_t.url) {
+        _t._iO.url = _t.url;
+      }
+
+      // mix in any options defined at createSound()
       _t._iO = _mixin(_t._iO, _t.options);
+
+      // mix in any options specific to this method
+      _t._iO = _mixin(oOptions, _t._iO);
+
       _t._iO.url = _parseURL(_t._iO.url);
+
       _t.instanceOptions = _t._iO;
 
       // RTMP-only
@@ -1685,6 +1713,12 @@ function SoundManager(smURL, smID) {
 
       if (exit !== null) {
         return exit;
+      }
+
+      // edge case: play() with explicit URL parameter
+      if (oOptions.url && oOptions.url !== _t.url) {
+        // load using merged options
+        _t.load(_t._iO);
       }
 
       if (!_t.loaded) {
@@ -1736,9 +1770,10 @@ function SoundManager(smURL, smID) {
        * If we just call resume() the onplay() callback will never be called.
        * So only call resume() if the position is > 0.
        * Another reason is because options like volume won't have been applied yet.
+       * For normal sounds, just resume.
        */
 
-      if (_t.paused && _t.position && _t.position > 0) {
+      if (_t.paused && _t.position >= 0 && (!_t._iO.serverURL || _t.position > 0)) {
 
         // https://gist.github.com/37b17df75cc4d7a90bf6
         _s._wD(fN + '"' + _t.id + '" is resuming from paused state',1);
@@ -1989,7 +2024,7 @@ function SoundManager(smURL, smID) {
           position, position1K,
           // Use the duration from the instance options, if we don't have a track duration yet.
           // position >= 0 and <= current available (loaded) duration
-          offset = (_t.isHTML5 ? Math.max(nMsecOffset,0) : Math.min(_t.duration || _t._iO.duration, Math.max(nMsecOffset, 0)));
+          offset = (_t.isHTML5 ? Math.max(nMsecOffset, 0) : Math.min(_t.duration || _t._iO.duration, Math.max(nMsecOffset, 0)));
 
       original_pos = _t.position;
       _t.position = offset;
@@ -2613,8 +2648,9 @@ function SoundManager(smURL, smID) {
     this._get_html5_duration = function() {
 
       var _iO = _t._iO,
-          d = (_t._a ? _t._a.duration*1000 : (_iO ? _iO.duration : undefined)),
-          result = (d && !isNaN(d) && d !== Infinity ? d : (_iO ? _iO.duration : null));
+          // if audio object exists, use its duration - else, instance option duration (if provided - it's a hack, really, and should be retired) OR null
+          d = (_t._a && _t._a.duration ? _t._a.duration*1000 : (_iO && _iO.duration ? _iO.duration : null)),
+          result = (d && !isNaN(d) && d !== Infinity ? d : null);
 
       return result;
 
@@ -2704,7 +2740,7 @@ function SoundManager(smURL, smID) {
         } else {
 
           // null for stupid Opera 9.64 case
-          _t._a = (_isOpera ? new Audio(null) : new Audio());
+          _t._a = (_isOpera && opera.version() < 10 ? new Audio(null) : new Audio());
 
         }
 
@@ -2942,17 +2978,13 @@ function SoundManager(smURL, smID) {
       _t.duration = Math.floor(nDuration);
       _t.bufferLength = nBufferLength;
 
-      if (!_iO.isMovieStar) {
+      if (!_t.isHTML5 && !_iO.isMovieStar) {
 
         if (_iO.duration) {
-          // use duration from options, if specified and larger
+          // use duration from options, if specified and larger. nobody should be specifying duration in options, actually, and it should be retired.
           _t.durationEstimate = (_t.duration > _iO.duration) ? _t.duration : _iO.duration;
         } else {
           _t.durationEstimate = parseInt((_t.bytesTotal / _t.bytesLoaded) * _t.duration, 10);
-        }
-
-        if (typeof _t.durationEstimate === 'undefined') {
-          _t.durationEstimate = _t.duration;
         }
 
       } else {
@@ -3051,7 +3083,7 @@ function SoundManager(smURL, smID) {
       _t.captiondata = oData;
 
       if (_t._iO.oncaptiondata) {
-        _t._iO.oncaptiondata.apply(_t);
+        _t._iO.oncaptiondata.apply(_t, [oData]);
       }
 
 	};
@@ -3347,6 +3379,18 @@ function SoundManager(smURL, smID) {
 
   };
 
+  function _preferFlashCheck(kind) {
+
+    // whether flash should play a given type
+    return (_s.preferFlash && _hasFlash && !_s.ignoreFlash && (typeof _s.flash[kind] !== 'undefined' && _s.flash[kind]));
+
+  }
+
+  /**
+   * Internal DOM2-level event helpers
+   * ---------------------------------
+   */
+
   _event = (function() {
 
     var old = (_win.attachEvent),
@@ -3357,7 +3401,8 @@ function SoundManager(smURL, smID) {
 
     function getArgs(oArgs) {
 
-      var args = _slice.call(oArgs), len = args.length;
+      var args = _slice.call(oArgs),
+          len = args.length;
 
       if (old) {
         // prefix
@@ -3405,13 +3450,6 @@ function SoundManager(smURL, smID) {
     };
 
   }());
-
-  function _preferFlashCheck(kind) {
-
-    // whether flash should play a given type
-    return (_s.preferFlash && _hasFlash && !_s.ignoreFlash && (typeof _s.flash[kind] !== 'undefined' && _s.flash[kind]));
-
-  }
 
   /**
    * Internal HTML5 event handling
@@ -3584,7 +3622,9 @@ function SoundManager(smURL, smID) {
           ranges = e.target.buffered,
           // firefox 3.6 implements e.loaded/total (bytes)
           loaded = (e.loaded||0),
-          total = (e.total||1);
+          total = (e.total||1),
+          // HTML5 returns msec. SM2 API uses seconds for setPosition() etc., whether Flash or HTML5.
+          scale = 1000;
 
       // reset the "buffered" (loaded byte ranges) array
       t.buffered = [];
@@ -3597,23 +3637,23 @@ function SoundManager(smURL, smID) {
         // re-build "buffered" array
         for (i=0, j=ranges.length; i<j; i++) {
           t.buffered.push({
-            'start': ranges.start(i),
-            'end': ranges.end(i)
+            'start': ranges.start(i) * scale,
+            'end': ranges.end(i) * scale
           });
         }
 
         // use the last value locally
-        buffered = (ranges.end(0) - ranges.start(0));
+        buffered = (ranges.end(0) - ranges.start(0)) * scale;
 
         // linear case, buffer sum; does not account for seeking and HTTP partials / byte ranges
-        loaded = buffered/e.target.duration;
+        loaded = buffered/(e.target.duration*scale);
 
         // <d>
         if (isProgress && ranges.length > 1) {
           str = [];
           j = ranges.length;
           for (i=0; i<j; i++) {
-            str.push(e.target.buffered.start(i) +'-'+ e.target.buffered.end(i));
+            str.push(e.target.buffered.start(i)*scale +'-'+ e.target.buffered.end(i)*scale);
           }
           _s._wD(_h5+'progress: timeRanges: '+str.join(', '));
         }
@@ -3797,12 +3837,17 @@ function SoundManager(smURL, smID) {
 
   _testHTML5 = function() {
 
-    if (!_s.useHTML5Audio || typeof Audio === 'undefined') {
+    /**
+     * Internal: Iterates over audioFormats, determining support eg. audio/mp3, audio/mpeg and so on
+     * assigns results to html5[] and flash[].
+     */
+
+    if (!_s.useHTML5Audio || !_s.hasHTML5) {
       return false;
     }
 
     // double-whammy: Opera 9.64 throws WRONG_ARGUMENTS_ERR if no parameter passed to Audio(), and Webkit + iOS happily tries to load "null" as a URL. :/
-    var a = (typeof Audio !== 'undefined' ? (_isOpera ? new Audio(null) : new Audio()) : null),
+    var a = (typeof Audio !== 'undefined' ? (_isOpera && opera.version() < 10 ? new Audio(null) : new Audio()) : null),
         item, lookup, support = {}, aF, i;
 
     function _cp(m) {
@@ -3817,7 +3862,7 @@ function SoundManager(smURL, smID) {
 
       if (m instanceof Array) {
         // iterate through all mime types, return any successes
-        for (i=0, j=m.length; i<j && !isOK; i++) {
+        for (i=0, j=m.length; i<j; i++) {
           if (_s.html5[m[i]] || a.canPlayType(m[i]).match(_s.html5Test)) {
             isOK = true;
             _s.html5[m[i]] = true;
@@ -3931,13 +3976,16 @@ function SoundManager(smURL, smID) {
     noNSLoop: 'Note: Looping not implemented for MovieStar formats',
     needfl9: 'Note: Switching to flash 9, required for MP4 formats.',
     mfTimeout: 'Setting flashLoadTimeout = 0 (infinite) for off-screen, mobile flash case',
+    needFlash: _sm + ': Fatal error: Flash is needed to play some required formats, but is not available.',
+    gotFocus: _sm + ': Got window focus.',
     mfOn: 'mobileFlash::enabling on-screen flash repositioning',
     policy: 'Enabling usePolicyFile for data access',
     setup: _sm + '.setup(): allowed parameters: %s',
     setupError: _sm + '.setup(): "%s" cannot be assigned with this method.',
     setupUndef: _sm + '.setup(): Could not find option "%s"',
     setupLate: _sm + '.setup(): url + flashVersion changes will not take effect until reboot().',
-    h5a: 'creating HTML5 Audio() object'
+    h5a: 'creating HTML5 Audio() object',
+    noURL: _sm + ': Flash URL required. Call soundManager.setup({url:...}) to get started.'
     // </d>
 
   };
@@ -4472,8 +4520,6 @@ function SoundManager(smURL, smID) {
         if (!_s.html5 || !_s.html5.canPlayType) {
           _s._wD('SoundManager: No HTML5 Audio() support detected.');
           _s.hasHTML5 = false;
-        } else {
-          _s.hasHTML5 = true;
         }
 
         // <d>
@@ -4799,9 +4845,11 @@ function SoundManager(smURL, smID) {
     var remoteURL = (smURL || _s.url),
     localURL = (_s.altURL || remoteURL),
     swfTitle = 'JS/Flash audio component (SoundManager 2)',
-    oEmbed, oMovie, oTarget = _getDocument(), tmp, movieHTML, oEl, extraClass = _getSWFCSS(),
-    s, x, sClass, isRTL = null,
-    html = _doc.getElementsByTagName('html')[0];
+    oTarget = _getDocument(),
+    extraClass = _getSWFCSS(),
+    isRTL = null,
+    html = _doc.getElementsByTagName('html')[0],
+    oEmbed, oMovie, tmp, movieHTML, oEl, s, x, sClass;
 
     isRTL = (html && html.dir && html.dir.match(/rtl/i));
     smID = (typeof smID === 'undefined'?_s.id:smID);
@@ -4980,10 +5028,22 @@ function SoundManager(smURL, smID) {
       return false;
     }
 
-    // attempt to get, or create, movie
-    // may already exist
+    // attempt to get, or create, movie (may already exist)
     if (_flash) {
       return false;
+    }
+
+    if (!_s.url) {
+
+      /**
+       * Something isn't right - we've reached init, but the soundManager url property has not been set.
+       * User has not called setup({url: ...}), or has not set soundManager.url (legacy use case) directly before init time.
+       * Notify and exit. If user calls setup() with a url: property, init will be restarted as in the deferred loading case.
+       */
+
+       _wDS('noURL');
+       return false;
+
     }
 
     // inline markup case
@@ -5031,6 +5091,11 @@ function SoundManager(smURL, smID) {
     var p,
         loadIncomplete = false;
 
+    if (!_s.url) {
+      // No SWF url to load (noURL case) - exit for now. Will be retried when url is set.
+      return false;
+    }
+
     if (_waitingForEI) {
       return false;
     }
@@ -5054,7 +5119,7 @@ function SoundManager(smURL, smID) {
 
     setTimeout(function() {
 
-      p = _s.getMoviePercent();      
+      p = _s.getMoviePercent();
 
       if (loadIncomplete) {
         // special case: if movie *partially* loaded, retry until it's 100% before assuming failure.
@@ -5123,7 +5188,7 @@ function SoundManager(smURL, smID) {
 
     _okToDisable = true;
     _isFocused = true;
-    _s._wD(_sm+': Got window focus.');
+    _wDS('gotFocus');
 
     // allow init to restart
     _waitingForEI = false;
@@ -5138,6 +5203,8 @@ function SoundManager(smURL, smID) {
 
   _showSupport = function() {
 
+    // <d>
+
     var item, tests = [];
 
     if (_s.useHTML5Audio && _s.hasHTML5) {
@@ -5148,6 +5215,8 @@ function SoundManager(smURL, smID) {
       }
       _s._wD('-- SoundManager 2: HTML5 support tests ('+_s.html5Test+'): '+tests.join(', ')+' --',1);
     }
+
+    // </d>
 
   };
 
@@ -5177,7 +5246,7 @@ function SoundManager(smURL, smID) {
       }
     }
 
-    _s._wD('-- SoundManager 2 ' + (_disabled?'failed to load':'loaded') + ' (' + (_disabled?'security/load error':'OK') + ') --', 1);
+    _s._wD('-- SoundManager 2 ' + (_disabled?'failed to load':'loaded') + ' (' + (_disabled?'Flash security/load error':'OK') + ') --', 1);
 
     if (_disabled || bNoDisable) {
       if (_s.useFlashBlock && _s.oMC) {
@@ -5384,7 +5453,7 @@ function SoundManager(smURL, smID) {
     _showSupport();
 
     if (!_hasFlash && _needsFlash) {
-      _s._wD('SoundManager: Fatal error: Flash is needed to play some required formats, but is not available.');
+      _wDS('needFlash');
       // TODO: Fatal here vs. timeout approach, etc.
       // hack: fail sooner.
       _s.setup({
@@ -5440,11 +5509,6 @@ function SoundManager(smURL, smID) {
     _debugTS('onload', false);
     _catchError({type:'NO_DOM2_EVENTS', fatal:true});
 
-  }
-
-  if (_doc.readyState === 'complete') {
-    // DOMReady has already happened.
-    setTimeout(_domContentLoaded,100);
   }
 
 } // SoundManager()
