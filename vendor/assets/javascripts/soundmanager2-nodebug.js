@@ -521,7 +521,7 @@ function SoundManager(smURL, smID) {
   this._wD = this._writeDebug;
   this._debug = function() {
   };
-  this.reboot = function() {
+  this.reset = function(bClear) {
     var i, j;
     for (i = _s.soundIDs.length-1; i >= 0; i--) {
       _s.sounds[_s.soundIDs[i]].destruct();
@@ -540,13 +540,20 @@ function SoundManager(smURL, smID) {
     _s.soundIDs = [];
     _s.sounds = {};
     _flash = null;
-    for (i in _on_queue) {
-      if (_on_queue.hasOwnProperty(i)) {
-        for (j = _on_queue[i].length-1; j >= 0; j--) {
-          _on_queue[i][j].fired = false;
+    if (bClear) {
+      _on_queue = [];
+    } else {
+      for (i in _on_queue) {
+        if (_on_queue.hasOwnProperty(i)) {
+          for (j = _on_queue[i].length-1; j >= 0; j--) {
+            _on_queue[i][j].fired = false;
+          }
         }
       }
     }
+  };
+  this.reboot = function() {
+    _s.reset();
     _win.setTimeout(_s.beginDelayedInit, 20);
   };
   this.getMoviePercent = function() {
