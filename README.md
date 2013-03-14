@@ -1,6 +1,6 @@
 # SoundManager on Rails
 
-This is the original [SoundManager2](http://www.schillmania.com/projects/soundmanager2/) wrapped in a gem for easy use with Rail's asset pipeline.
+This is the original [SoundManager2](http://www.schillmania.com/projects/soundmanager2/) wrapped in a gem for easy use with Rails' asset pipeline.
 
 ## Installation
 
