@@ -1,4 +1,4 @@
-# SoundManager on Rails
+# SoundManager on Rails [![Gem Version](https://badge.fury.io/rb/coderay.png)](http://badge.fury.io/rb/coderay)
 
 This is the original [SoundManager2](http://www.schillmania.com/projects/soundmanager2/) wrapped in a gem for easy use with Rails' asset pipeline.
 
