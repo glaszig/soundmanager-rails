@@ -39,7 +39,8 @@ Of course, you can just load the SoundManager library itself using one of the fo
 - This gem uses the cross-domain enabled flash files distributed with sm2 by default to make integration with external asset hosts easy.  
 Thanks to [@liufengyun](https://github.com/liufengyun) for testing this.
 
-- The soundmanager vendor files have been patched to support rails' assets pipeline. See the [`soundmanager.patch`](https://github.com/glaszig/soundmanager-rails/blob/master/soundmanager.patch) file. I plan trying to get this merged upstream.
+- The soundmanager vendor files have been patched to support rails' assets pipeline. See the [`soundmanager.patch`](https://github.com/glaszig/soundmanager-rails/blob/master/soundmanager.patch) file.  
+You can use this patch elsewhere via `patch -p 0 < soundmanager.patch`. I plan getting this merged upstream.
 
 ## Contributing
 
