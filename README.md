@@ -1,4 +1,4 @@
-# SoundManager on Rails [![Gem Version](https://badge.fury.io/rb/soundmanager-rails.png)](http://badge.fury.io/rb/soundmanager-rails)
+# SoundManager on Rails [![Gem Version](https://badge.fury.io/rb/soundmanager-rails.png)](http://badge.fury.io/rb/soundmanager-rails) [![endorse](https://api.coderwall.com/glaszig/endorsecount.png)](https://coderwall.com/glaszig)
 
 This is the original [SoundManager2](http://www.schillmania.com/projects/soundmanager2/) wrapped in a gem for easy use with Rails' asset pipeline.
 
