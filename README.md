@@ -10,7 +10,7 @@ Add this line to your application's Gemfile:
 
 Or use bleeding edge code from Github:
 
-    gem 'soundmanager-rails', :git => 'git://github.com/glaszig/soundmanager-rails.git'
+    gem 'soundmanager-rails', github: 'glaszig/soundmanager-rails'
 
 And then execute:
 
