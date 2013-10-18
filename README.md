@@ -34,9 +34,12 @@ Of course, you can just load the SoundManager library itself using one of the fo
     //= require soundmanager2-nodebug
     //= require soundmanager2-nodebug-jsmin
 
-> **Note**  
-> This gem uses the cross-domain enabled flash files distributed with sm2 by default to make integration with external asset hosts easy.  
-> Thanks to [@liufengyun](https://github.com/liufengyun) for testing this.
+## Notes
+
+- This gem uses the cross-domain enabled flash files distributed with sm2 by default to make integration with external asset hosts easy.  
+Thanks to [@liufengyun](https://github.com/liufengyun) for testing this.
+
+- The soundmanager vendor files have been patched to support rails' assets pipeline. See the [`soundmanager.patch`](https://github.com/glaszig/soundmanager-rails/blob/master/soundmanager.patch) file. I plan trying to get this merged upstream.
 
 ## Contributing
 
