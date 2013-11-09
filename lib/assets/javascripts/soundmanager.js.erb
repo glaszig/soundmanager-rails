@@ -14,12 +14,12 @@ end %>
 (function() {
   if (typeof soundManager != 'undefined') {
     soundManager.setup({
-      url:                 '<%= Rails.application.config.assets.prefix + "/swf/" %>',
-      flashFilename:       '<%= File.basename asset_path "swf/soundmanager2.swf" %>',
-      flash9Filename:      '<%= File.basename asset_path "swf/soundmanager2_flash9.swf" %>',
-      flashDebugFilename:  '<%= File.basename asset_path "swf/soundmanager2_debug.swf" %>',
-      flash9DebugFilename: '<%= File.basename asset_path "swf/soundmanager2_flash9_debug.swf" %>',
-      debugMode:           !<%= Soundmanager.env.production?.to_s %>
+      flashVersion: 9,
+      <% if Soundmanager.env == 'development' %>
+      url: '<%= asset_path "swf/soundmanager2_flash9_debug.swf" %>'
+      <% else %>
+      url: '<%= asset_path "swf/soundmanager2_flash9.swf" %>'
+      <% end %>
     });
   }
 })();
