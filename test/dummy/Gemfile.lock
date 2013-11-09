@@ -1,7 +1,7 @@
 PATH
   remote: ../../
   specs:
-    soundmanager-rails (0.1.5)
+    soundmanager-rails (1.0.0)
 
 GEM
   remote: https://rubygems.org/

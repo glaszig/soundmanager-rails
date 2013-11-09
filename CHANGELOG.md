@@ -1,8 +1,10 @@
 # Changelog
 
-**master** Feature release
+**1.0.0** Feature release
 
- - Added support for Rails (4) asset pipeline
+ - Added proper support for Rails (4) asset pipeline
+ - Flash version 9 is now the default (reconfigure `sm2.flashVersion` and `sm2.url via [`setup()`](http://www.schillmania.com/projects/soundmanager2/doc/#soundmanager-setup) if you depend on 8)
+ - `sm2.url` now points to the proper asset path of the swf file directly
 
 **0.1.5** Maintenance release
 
