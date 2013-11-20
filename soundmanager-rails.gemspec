@@ -9,6 +9,7 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{Wraps SoundManager2 by Scott Schiller in a gem for use with Ruby on Rails}
   gem.homepage      = "https://github.com/glaszig/soundmanager-rails"
   gem.version       = Soundmanager::Rails::VERSION
+  gem.license       = 'MIT'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
