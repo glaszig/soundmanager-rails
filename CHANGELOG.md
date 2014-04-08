@@ -1,5 +1,10 @@
 # Changelog
 
+**1.0.1** Maintenance release
+
+ - Upgraded soundmanager2 to v2.97a.20131201
+ - Added Rake task for easy vendor file upgrades
+
 **1.0.0** Feature release
 
  - Added proper support for Rails (4) asset pipeline

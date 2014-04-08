@@ -51,6 +51,12 @@ Thanks to [@liufengyun](https://github.com/liufengyun) for testing this.
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
+### Updating vendor file
+
+To just upgrade to the latest SoundManager2 version you can use the rake tasks:
+
+    rake update:sources
+
 # License
 
 See the LICENSE file.  
